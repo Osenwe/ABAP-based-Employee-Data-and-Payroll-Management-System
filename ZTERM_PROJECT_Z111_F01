@@ -1,0 +1,1027 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZTERM_PROJECT_Z111_F01
+*&---------------------------------------------------------------------*
+FORM validate_login.
+  DATA: str  TYPE string,
+        str1 TYPE string,
+        str2 TYPE string,
+        mesg TYPE string.
+
+* Query to get data from zlogintable_111
+  SELECT password stype FROM zlogintable_111 INTO ( str , str1 ) WHERE employeeid = loginid.
+  ENDSELECT.
+
+  SELECT fname FROM zemployeedata111 INTO str2 WHERE employee_id = loginid.
+  ENDSELECT.
+
+  CONCATENATE 'Welcome Back' str2 INTO mesg SEPARATED BY space.
+
+*  IF sy-subrc = 0.
+  IF str1 = 'Admin' AND password = str AND sy-subrc = 0.
+    MESSAGE mesg TYPE 'I'.
+    CALL SCREEN '0200'.
+  ELSE.
+    MESSAGE 'Login Details Incorrect!' TYPE 'I'.
+  ENDIF.
+
+ENDFORM.
+
+FORM create_new_account.
+  DATA: wa_user TYPE zlogintable_111.
+
+
+
+  wa_user-employeeid = zlogintable_111-employeeid.
+  wa_user-password = 'passinit'.
+  wa_user-stat = zlogintable_111-stat.
+  wa_user-stype = zlogintable_111-stype.
+  wa_user-created = sy-datum.
+  wa_user-timest_created = sy-uzeit.
+
+  SELECT COUNT( * ) FROM zemployeedata111 INTO rec_num WHERE employee_id = zlogintable_111-employeeid.
+  IF rec_num = 1.
+    INSERT zlogintable_111 FROM wa_user.
+  ELSE.
+    MESSAGE 'User not found, save in his record first' TYPE 'I'.
+  ENDIF.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE 'User Account Created Successfully initial password is passinit' TYPE 'S'.
+  ELSE.
+    ROLLBACK WORK.
+    MESSAGE 'ERROR!' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
+
+
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_USER_RECORD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_user_record.
+  DATA: wa_user TYPE zemployeedata111,
+        mssg    TYPE string.
+
+**** Next Few Lines of Code to generate  an Official Email
+* Get length of first name
+  name_len = strlen( zemployeedata111-lname ).
+
+  lpart = zemployeedata111-fname+0(1).
+  IF name_len > 5.
+    fpart = zemployeedata111-lname+0(5).
+  ELSE.
+    fpart = zemployeedata111-lname.
+  ENDIF.
+
+  CONCATENATE fpart '%' INTO pattern.
+
+  SELECT COUNT(*)
+    FROM zemployeedata111
+    INTO rec_num
+    WHERE lname LIKE pattern.
+
+
+  rec_num = rec_num + 1.
+  rec_num_c = rec_num.
+
+
+  CONCATENATE fpart rec_num_c lpart  emaildomain INTO email.
+  TRANSLATE email TO LOWER CASE.
+  CONDENSE email NO-GAPS.
+**** Next Few Lines of code to generate an employee id
+  SELECT COUNT(*)
+    FROM zemployeedata111
+    INTO t_cnt.
+
+  t_cnt = t_init + t_cnt + 1.
+  t_cnt_c = t_cnt.
+****
+
+****
+  CONCATENATE 'Account Created Successfully initial password: passinit and Email:' email 'Employee ID: ' t_cnt_c INTO mssg SEPARATED BY space.
+
+
+  wa_user-employee_id = t_cnt_c.
+  wa_user-fname = zemployeedata111-fname.
+  wa_user-mname = zemployeedata111-mname.
+  wa_user-lname = zemployeedata111-lname.
+  wa_user-gender = zemployeedata111-gender.
+  wa_user-dob = zemployeedata111-dob.
+  wa_user-lang = zemployeedata111-lang.
+  wa_user-phone_no = zemployeedata111-phone_no.
+  wa_user-officialemail = email.
+  wa_user-address = zemployeedata111-address.
+  wa_user-zipcode = zemployeedata111-zipcode.
+  wa_user-city = zemployeedata111-city.
+  wa_user-state = 'MI'.
+  wa_user-country = 'USA'.
+  wa_user-hiringdate = sy-datum.
+  wa_user-termindate = ZEMPLOYEEDATA111-TERMINDATE.
+  wa_user-position_id = zemployeedata111-position_id.
+  wa_user-branchno = zemployeedata111-branchno.
+  wa_user-stat = 'Active'.
+
+  INSERT zemployeedata111 FROM wa_user.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE mssg TYPE 'S'.
+  ELSE.
+    ROLLBACK WORK.
+    MESSAGE 'Please Check Your Inputs' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
+
+*&---------------------------------------------------------------------*
+*&      Form  TAB1
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM tab1 .
+  ts_mat-activetab = 'EMP_TAB1'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  TAB2
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM tab2 .
+  ts_mat-activetab = 'EMP_TAB2'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  POPULATE_EMP_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM populate_emp_data .
+
+* Lets filter out active employees (still employed the business)
+  SELECT "client
+         employee_id
+         fname
+         lname
+         officialemail
+         branchno
+         position_id
+    FROM zemployeedata111
+    INTO TABLE it_active
+    WHERE branchno = branch AND stat = 'Active'.
+  IF sy-subrc = 0.
+    SORT it_active BY id.
+  ENDIF.
+
+*Lets filter out the Inactive employees (employment terminated)
+  SELECT  "client
+         employee_id
+         fname lname
+         officialemail
+         branchno
+         position_id
+  FROM zemployeedata111
+  INTO TABLE it_inactive
+  WHERE branchno = branch AND stat = 'Inactive'.
+  IF sy-subrc = 0.
+    SORT it_inactive BY id.
+  ENDIF.
+
+  IF sy-subrc = 1.
+    MESSAGE 'Sorry! no data was returned' TYPE 'E'.
+  ENDIF.
+
+* How many active employees in the branch
+  SELECT COUNT(*)
+  FROM zemployeedata111
+  INTO active_users
+  WHERE branchno = branch AND stat = 'Active'.
+
+  active_users_c = active_users.
+
+  CONCATENATE 'There are ' active_users_c '  ' 'employees currently working in branch ' branch INTO summary SEPARATED BY space.
+
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  clear_page_empdata
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear_page_empdata .
+  CLEAR:  zemployeedata111-fname,
+          zemployeedata111-mname,
+          zemployeedata111-lname,
+          zemployeedata111-gender,
+          zemployeedata111-dob,
+          zemployeedata111-lang,
+          zemployeedata111-phone_no,
+          zemployeedata111-address,
+          zemployeedata111-city,
+          zemployeedata111-zipcode,
+          zemployeedata111-position_id,
+          zemployeedata111-branchno.
+ENDFORM.
+
+
+FORM update_page_empdata.
+  DATA: wa_employee TYPE zemployeedata111.
+
+  UPDATE zemployeedata111
+  SET fname = zemployeedata111-fname
+      mname = zemployeedata111-mname
+      lname = zemployeedata111-lname
+      gender = zemployeedata111-gender
+      dob = zemployeedata111-dob
+      lang = zemployeedata111-lang
+      phone_no = zemployeedata111-phone_no
+      address = zemployeedata111-address
+      city = zemployeedata111-city
+      zipcode = zemployeedata111-zipcode
+      position_id = zemployeedata111-position_id
+      branchno = zemployeedata111-branchno
+   WHERE employee_id = zemployeedata111-employee_id.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE 'Update Successful' TYPE 'S'.
+  ELSE.
+    MESSAGE 'Update Not Successful!' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_DATA_EMP
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_data_emp .
+
+* wa_employees already defined in the top module
+  IF zemployeedata111-employee_id IS NOT INITIAL.
+* sql query to select the needed fields from the table
+    SELECT SINGLE  fname mname lname gender dob lang phone_no address city zipcode position_id branchno
+      FROM zemployeedata111
+      INTO wa_employees
+      WHERE employee_id = zemployeedata111-employee_id.
+
+  ENDIF.
+
+* we take the result of query above and connect the to display on input fields in screen
+  IF sy-subrc = 0.
+    zemployeedata111-fname  = wa_employees-fname.
+    zemployeedata111-mname  = wa_employees-mname.
+    zemployeedata111-lname  = wa_employees-lname.
+    zemployeedata111-gender  = wa_employees-gender.
+    zemployeedata111-dob  = wa_employees-dob.
+    zemployeedata111-lang  = wa_employees-lang.
+    zemployeedata111-phone_no  = wa_employees-phone.
+    zemployeedata111-address  = wa_employees-addr.
+    zemployeedata111-city  = wa_employees-city.
+    zemployeedata111-zipcode  = wa_employees-zipc.
+    zemployeedata111-position_id  = wa_employees-posi.
+    zemployeedata111-branchno  = wa_employees-branchno.
+  ENDIF.
+
+* returns a message if the customner number is not found
+  IF sy-subrc > 0.
+    MESSAGE 'employee data not found!' TYPE 'I'.
+  ELSEIF sy-subrc = 0.
+    MESSAGE 'employee data ready for editing' TYPE 'I'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  UPDATE_USER_ACCOUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM update_user_accout .
+  DATA: wa_user     TYPE zlogintable_111.
+
+  UPDATE zlogintable_111
+  SET stat = zlogintable_111-stat
+      stype = zlogintable_111-stype
+   WHERE employeeid = zlogintable_111-employeeid.
+
+  IF sy-subrc = 0.
+    UPDATE zemployeedata111
+    SET stat = zlogintable_111-stat
+     WHERE employee_id = zlogintable_111-employeeid.
+
+    IF sy-subrc = 0.
+      COMMIT WORK.
+      MESSAGE 'Update Successful' TYPE 'S'.
+    ELSE.
+      MESSAGE 'Employee Data not Successfully Updated' TYPE 'E'.
+    ENDIF.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_USER_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_user_data .
+
+* i created work area this way because i only need certain fields not all, check top include
+* using "DATA: wa_user TYPE zlogintable_111" syntax resulted in error not compatible due varying lengths (no of fields)
+  DATA: BEGIN OF wa_user,
+          stat           TYPE zlogintable_111-stat,
+          stype          TYPE zlogintable_111-stype,
+          created        TYPE zlogintable_111-created,
+          timest_created TYPE zlogintable_111-timest_created,
+        END OF wa_user.
+
+  IF zlogintable_111-employeeid IS NOT INITIAL.
+* sql query to select the needed fields from the table
+    SELECT SINGLE  stat stype created timest_created
+      FROM zlogintable_111
+      INTO wa_user
+      WHERE employeeid = zlogintable_111-employeeid.
+
+  ENDIF.
+
+* we take the result of query above and connect the to display on input fields in screen
+  IF sy-subrc = 0.
+    zlogintable_111-stat  = wa_user-stat.
+    zlogintable_111-stype  = wa_user-stype.
+    zlogintable_111-created = wa_user-created.
+    zlogintable_111-timest_created = wa_user-timest_created.
+
+  ENDIF.
+
+* returns a message if the customner number is not found
+  IF sy-subrc > 0.
+    MESSAGE 'user account data not found!' TYPE 'I'.
+  ELSEIF sy-subrc = 0.
+    MESSAGE 'user account data ready for editing' TYPE 'I'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR1
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear1 .
+  CLEAR: zlogintable_111-employeeid,
+         zlogintable_111-stat,
+         zlogintable_111-stype.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DELETE_USER_DATA
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM delete_user_data .
+  DATA: BEGIN OF wa_employees,
+          stat TYPE zemployeedata111-stat,
+        END OF wa_employees.
+
+  " this variable is just to query the zemployeedata111 to see if the deleted account has a profile in the zemployeedata111
+  DATA no TYPE i.
+
+  DELETE FROM zlogintable_111
+  WHERE employeeid = zlogintable_111-employeeid.
+
+  IF sy-subrc = 0.
+    SELECT COUNT(*)
+      FROM zemployeedata111
+      INTO no.
+    IF sy-subrc = 0.
+      UPDATE zemployeedata111
+      SET stat = 'Inactive'
+          termindate = sy-datum
+      WHERE employee_id = zlogintable_111-employeeid.
+    ENDIF.
+    COMMIT WORK.
+    MESSAGE 'Delete successful' TYPE 'S'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_USER_ACCOUT_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_user_accout_alv .
+  SUBMIT zalv_screen_0500 AND RETURN.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  TAB3
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM tab3 .
+  ts_mat-activetab = 'TAB_LEAVE_TAB1'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  TAB4
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM tab4 .
+  ts_mat-activetab = 'TAB_LEAVE_TAB2'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  TAB5
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM tab5 .
+  ts_mat-activetab = 'TAB_LEAVE_TAB3'.
+ENDFORM.
+
+FORM populate_leave.
+
+  SELECT zemployeedata111~client
+         zemployeeleav111~leave_id
+         zemployeeleav111~employeeid
+         zemployeedata111~fname
+         zemployeedata111~lname
+         zemployeedata111~officialemail
+         zemployeeleav111~ltype
+         zemployeeleav111~start_date
+         zemployeeleav111~end_date
+         zemployeeleav111~reason
+         zemployeeleav111~status
+         zemployeeleav111~admin_comment
+    FROM zemployeedata111 INNER JOIN zemployeeleav111
+    ON zemployeedata111~employee_id = zemployeeleav111~employeeid
+    INTO TABLE it_approve WHERE zemployeeleav111~status = 'Approved' AND
+    zemployeeleav111~start_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate
+    AND zemployeeleav111~end_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate.
+
+  SELECT zemployeedata111~client
+       zemployeeleav111~leave_id
+       zemployeeleav111~employeeid
+       zemployeedata111~fname
+       zemployeedata111~lname
+       zemployeedata111~officialemail
+       zemployeeleav111~ltype
+       zemployeeleav111~start_date
+       zemployeeleav111~end_date
+       zemployeeleav111~reason
+       zemployeeleav111~status
+       zemployeeleav111~admin_comment
+  FROM zemployeedata111 INNER JOIN zemployeeleav111
+  ON zemployeedata111~employee_id = zemployeeleav111~employeeid
+  INTO TABLE it_reject WHERE zemployeeleav111~status = 'Declined' AND
+ zemployeeleav111~start_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate
+  AND zemployeeleav111~end_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate.
+
+  SELECT zemployeedata111~client
+ zemployeeleav111~leave_id
+ zemployeeleav111~employeeid
+ zemployeedata111~fname
+ zemployeedata111~lname
+ zemployeedata111~officialemail
+ zemployeeleav111~ltype
+ zemployeeleav111~start_date
+ zemployeeleav111~end_date
+ zemployeeleav111~reason
+ zemployeeleav111~status
+ zemployeeleav111~admin_comment
+FROM zemployeedata111 INNER JOIN zemployeeleav111
+ON zemployeedata111~employee_id = zemployeeleav111~employeeid
+INTO TABLE it_pending WHERE zemployeeleav111~status = 'Pending' AND
+zemployeeleav111~start_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate
+AND zemployeeleav111~end_date BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  EDIT_LEAVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM edit_leave .
+  IF zemployeeleav111-leave_id IS NOT INITIAL.
+* sql query to select the needed fields from the table
+    SELECT SINGLE leave_id employeeid ltype start_date end_date reason status admin_comment
+      FROM zemployeeleav111
+      INTO wa_leave
+      WHERE leave_id = zemployeeleav111-leave_id.
+
+  ENDIF.
+
+* we take the result of query above and connect the to display on input fields in screen
+  IF sy-subrc = 0.
+
+    zemployeeleav111-employeeid = wa_leave-employee_id.
+    zemployeeleav111-ltype = wa_leave-ltype.
+    zemployeeleav111-start_date = wa_leave-start_date.
+    zemployeeleav111-end_date = wa_leave-end_date.
+    zemployeeleav111-reason = wa_leave-reason.
+    zemployeeleav111-status = wa_leave-status.
+    zemployeeleav111-admin_comment = wa_leave-comment.
+
+  ENDIF.
+
+* returns a message if the customner number is not found
+  IF sy-subrc > 0.
+    MESSAGE 'data not found!' TYPE 'I'.
+  ELSEIF sy-subrc = 0.
+    MESSAGE 'employee leave data ready for editing' TYPE 'I'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  UPDATE_LEAVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM update_leave .
+*DATA: wa_leav TYPE zemployeeleav111.
+
+  UPDATE zemployeeleav111
+    SET ltype        = zemployeeleav111-ltype
+        start_date   = zemployeeleav111-start_date
+        end_date     = zemployeeleav111-end_date
+        reason       = zemployeeleav111-reason
+        status       = zemployeeleav111-status
+        admin_comment = zemployeeleav111-admin_comment
+     WHERE leave_id = zemployeeleav111-leave_id.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE 'Update Successful' TYPE 'S'.
+  ELSE.
+    MESSAGE 'Update Not Successful!' TYPE 'E'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_LEAVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_leave .
+
+  DATA: wa_leavers TYPE zemployeeleav111.
+
+  SELECT COUNT(*)
+     FROM zemployeeleav111
+     INTO t_cnt.
+
+  t_cnt = t_init + t_cnt + 1.
+  t_cnt_c = t_cnt.
+
+
+  wa_leavers-leave_id     = t_cnt_c.
+  wa_leavers-employeeid = zemployeeleav111-employeeid..
+  wa_leavers-ltype        = zemployeeleav111-ltype.
+  wa_leavers-start_date   = zemployeeleav111-start_date.
+  wa_leavers-end_date     = zemployeeleav111-end_date.
+  wa_leavers-reason       = zemployeeleav111-reason.
+  wa_leavers-status       = zemployeeleav111-status.
+  wa_leavers-admin_comment = zemployeeleav111-admin_comment.
+
+  SELECT COUNT(*) INTO rec_num FROM zemployeedata111 WHERE employee_id = zemployeeleav111-employeeid .
+
+  IF rec_num = 1.
+    INSERT zemployeeleav111 FROM wa_leavers.
+    IF sy-subrc = 0.
+      COMMIT WORK.
+      MESSAGE 'Successfull' TYPE 'S'.
+    ELSE.
+      ROLLBACK WORK.
+      MESSAGE 'Please Check Your Inputs' TYPE 'E'.
+    ENDIF.
+  ELSE.
+    MESSAGE 'Employee not found' TYPE 'I'.
+  ENDIF.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR_LEAVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear_leave.
+
+  CLEAR: zemployeeleav111-leave_id,
+          zemployeeleav111-employeeid,
+          zemployeeleav111-ltype,
+          zemployeeleav111-start_date,
+          zemployeeleav111-end_date,
+          zemployeeleav111-reason,
+          zemployeeleav111-status,
+          zemployeeleav111-admin_comment.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CHANGE_PASSWORD
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM change_password .
+
+  DATA: cpwd TYPE string.
+
+  IF zlogintable_111-password = ' ' OR newp = ' ' OR confirmp = ' '.
+    MESSAGE 'Please enter values in the fields to move on!' TYPE 'I'.
+  ENDIF.
+
+  SELECT COUNT( * )
+   FROM zpwdchange_111
+   INTO t_cnt.
+  t_cnt = t_init + t_cnt + 1.
+  t_cnt_c = t_cnt.
+
+  SELECT password FROM zlogintable_111
+    INTO cpwd WHERE employeeid = loginid.
+  ENDSELECT.
+
+  SELECT COUNT(*) FROM zpwdchange_111 INTO rec_num
+    WHERE employeeid = loginid AND
+    old_pwd = newp.
+
+
+  IF rec_num > 0.
+    MESSAGE: 'Password has been used before, Use a different Password' TYPE 'I'.
+    wa_pwd-empid = loginid.
+    wa_pwd-changeid = t_cnt.
+    wa_pwd-opwd = zlogintable_111-password.
+    wa_pwd-npwd = newp.
+    wa_pwd-datech = sy-datlo.
+    wa_pwd-timech = sy-timlo.
+    wa_pwd-stat = 'Unsuccessfull P'.
+
+    INSERT zpwdchange_111 FROM wa_pwd.
+  ELSE.
+    IF newp <> zlogintable_111-password AND newp = confirmp AND zlogintable_111-password = cpwd.
+      UPDATE zlogintable_111
+          SET password = newp
+      WHERE employeeid = loginid.
+    ENDIF.
+    IF sy-subrc = 0.
+      MESSAGE 'Password has been changed successfully' TYPE 'I'.
+
+      wa_pwd-empid = loginid.
+      wa_pwd-changeid = t_cnt.
+      wa_pwd-opwd = zlogintable_111-password.
+      wa_pwd-npwd = newp.
+      wa_pwd-datech = sy-datlo.
+      wa_pwd-timech = sy-timlo.
+      wa_pwd-stat = 'success'.
+
+      INSERT zpwdchange_111 FROM wa_pwd.
+    ELSE.
+      MESSAGE 'Encountered problem trying to change password' TYPE 'I'.
+      wa_pwd-empid = loginid.
+      wa_pwd-changeid = t_cnt.
+      wa_pwd-opwd = zlogintable_111-password.
+      wa_pwd-npwd = newp.
+      wa_pwd-datech = sy-datlo.
+      wa_pwd-timech = sy-timlo.
+      wa_pwd-stat = 'Unsuccessfull W'.
+    ENDIF.
+  ENDIF.
+
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR_SCREEN
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear_screen .
+  CLEAR: zlogintable_111-password,
+          newp,
+          confirmp.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  SAVE_TIMESHEET
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM save_timesheet.
+
+  TYPES: BEGIN OF ty_timesheet,
+           client       TYPE ztimesheet_111-client,
+           timeid       TYPE ztimesheet_111-timesheetid,
+           empid        TYPE ztimesheet_111-employeeid,
+           datein       TYPE ztimesheet_111-date_in,
+           timein       TYPE ztimesheet_111-time_in,
+           dateo        TYPE ztimesheet_111-date_out,
+           timeo        TYPE ztimesheet_111-time_out,
+           hours_worked TYPE ztimesheet_111-hours_worked,
+           pay          TYPE ztimesheet_111-pay,
+           currency     TYPE ztimesheet_111-currency,
+           paydate      TYPE ztimesheet_111-paydate,
+           comment      TYPE ztimesheet_111-work_comment,
+         END OF ty_timesheet.
+
+  DATA: it_timesheet TYPE TABLE OF  ty_timesheet,
+        wa_timesheet TYPE ty_timesheet,
+        hours_worked TYPE p DECIMALS 2,
+        payment      TYPE p DECIMALS 2.
+
+  DATA: posid TYPE string,
+        payhr TYPE p DECIMALS 2.
+
+*   sql query to get the position id of employee from zemployeedata111
+  SELECT position_id FROM zemployeedata111  INTO posid
+    WHERE employee_id = ztimesheet_111-employeeid.
+  ENDSELECT.
+
+*   sql query to get the hourly payrate of a particular employee from zjobs_111
+  SELECT hourly_rate FROM zjobs_111  INTO payhr
+    WHERE job_id = posid.
+  ENDSELECT.
+
+*   query and the variable involved will help to auto generate a timesheet ID
+  SELECT COUNT(*)
+     FROM ztimesheet_111
+     INTO t_cnt.
+  t_cnt = t_init + t_cnt + 1.
+  t_cnt_c = t_cnt.
+
+* types defined below for use by internal table and work area
+
+
+  hours_worked = ( ztimesheet_111-time_out - ztimesheet_111-time_in ) DIV 3600.
+  payment = hours_worked * payhr.
+
+
+  wa_timesheet-timeid = t_cnt_c.
+  wa_timesheet-empid = ztimesheet_111-employeeid.
+  wa_timesheet-datein = ztimesheet_111-date_in.
+  wa_timesheet-timein = ztimesheet_111-time_in.
+  wa_timesheet-dateo = ztimesheet_111-date_out.
+  wa_timesheet-timeo = ztimesheet_111-time_out.
+  wa_timesheet-hours_worked = hours_worked.
+*   formular for pay is (timeout - timein) * payrate
+  wa_timesheet-pay = payment.
+  wa_timesheet-currency = 'USD'.
+  wa_timesheet-paydate = ztimesheet_111-paydate.
+  wa_timesheet-comment = ztimesheet_111-work_comment.
+
+  SELECT COUNT(*) INTO rec_num FROM zemployeedata111 WHERE employee_id = ztimesheet_111-employeeid .
+
+  IF rec_num = 1.
+    INSERT ztimesheet_111 FROM wa_timesheet..
+    IF sy-subrc = 0.
+      COMMIT WORK.
+      MESSAGE 'Successfull' TYPE 'S'.
+    ELSE.
+      ROLLBACK WORK.
+      MESSAGE 'Please Check Your Inputs' TYPE 'E'.
+    ENDIF.
+  ELSE.
+    MESSAGE 'Employee not found' TYPE 'I'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  EDIT_TIMESHEET
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM edit_timesheet .
+  IF ztimesheet_111-timesheetid IS NOT INITIAL.
+* sql query to select the needed fields from the table
+    SELECT SINGLE timesheetid employeeid date_in time_in date_out time_out pay hours_worked  currency paydate work_comment
+      FROM ztimesheet_111
+      INTO wa_timesheet
+      WHERE timesheetid = ztimesheet_111-timesheetid.
+  ENDIF.
+
+* we take the result of query above and connect the to display on input fields in screen
+  IF sy-subrc = 0.
+
+    ztimesheet_111-employeeid = wa_timesheet-empid.
+    ztimesheet_111-date_in = wa_timesheet-datein.
+    ztimesheet_111-time_in = wa_timesheet-timein.
+    ztimesheet_111-date_out = wa_timesheet-dateo.
+    ztimesheet_111-time_out = wa_timesheet-timeo.
+    ztimesheet_111-hours_worked = wa_timesheet-hours_worked.
+    ztimesheet_111-pay = wa_timesheet-pay.
+    ztimesheet_111-paydate  = wa_timesheet-paydate.
+    ztimesheet_111-work_comment = wa_timesheet-comment.
+
+  ENDIF.
+
+* returns a message if the customner number is not found
+  IF sy-subrc > 0.
+    MESSAGE 'data not found!' TYPE 'I'.
+  ELSEIF sy-subrc = 0.
+    MESSAGE 'employee leave data ready for editing' TYPE 'I'.
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  UPDATE_TIMESHEET
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM update_timesheet .
+
+  UPDATE ztimesheet_111
+  SET  paydate = ztimesheet_111-paydate
+      date_in = ztimesheet_111-date_in
+      date_out = ztimesheet_111-date_out
+      time_in = ztimesheet_111-time_in
+      time_out = ztimesheet_111-time_out
+      work_comment = ztimesheet_111-work_comment
+   WHERE timesheetid = ztimesheet_111-timesheetid.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE 'Update Successful' TYPE 'S'.
+  ELSE.
+    MESSAGE 'Update Not Successful!' TYPE 'I'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  VIEW_TIMESHEET_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM view_timesheet_alv .
+  SUBMIT zalv_screen_0400t AND RETURN.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  POST_PAYROLL
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM post_payroll .
+
+* Attempt to aggregate across multiple tables
+
+
+*  IF taxrate IS INITIAL.
+*    taxrate = 2.
+*  ENDIF.
+*
+*  IF bonus IS INITIAL.
+*    bonus = 0.
+*  ENDIF.
+
+  tax = taxrate / 100.
+
+  SELECT client employeeid paydate
+    SUM( hours_worked ) AS reghr
+    SUM( pay ) AS regpay
+    SUM( pay )  AS totatax
+    SUM( pay ) AS netpay
+    FROM ztimesheet_111 INTO TABLE it_payroll "@DATA(it_test1)
+    WHERE date_in BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate
+    AND date_out BETWEEN zemployeedata111-hiringdate AND zemployeedata111-termindate
+    GROUP BY client employeeid paydate.
+
+  LOOP AT it_payroll INTO wa_payroll.
+    wa_payroll-totatax = wa_payroll-totatax * tax.
+    wa_payroll-netpay = wa_payroll-netpay + bonus - ( wa_payroll-netpay * tax ) .
+*  APPEND wa_payroll TO zpayroll_111.
+    INSERT zpayroll_111 FROM wa_payroll.
+    CLEAR wa_payroll.
+
+  ENDLOOP.
+  IF sy-subrc = 0.
+    MESSAGE 'Posted successfully' TYPE 'I'.
+  ELSE.
+    MESSAGE 'Errors identified' TYPE 'I'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  VIEW_PAYROLL_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM view_payroll_alv .
+  SUBMIT zalv_screen_0400p AND RETURN.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR_TIMESHEET
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear_timesheet .
+
+  CLEAR:   ztimesheet_111-timesheetid,
+           ztimesheet_111-employeeid,
+           ztimesheet_111-date_in,
+           ztimesheet_111-time_in,
+           ztimesheet_111-date_out,
+           ztimesheet_111-time_out,
+           ztimesheet_111-hours_worked,
+           ztimesheet_111-pay,
+           ztimesheet_111-paydate,
+           ztimesheet_111-work_comment.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  CLEAR_PAYROLL
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM clear_payroll .
+
+
+  CLEAR: taxrate, bonus,
+         zpayroll_111-paydate,
+         zemployeedata111-hiringdate,
+         zemployeedata111-termindate.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_PWD_CHANGE_LOGS
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_pwd_change_logs .
+  SUBMIT zalv_screen_0500P AND RETURN.
+ENDFORM.
