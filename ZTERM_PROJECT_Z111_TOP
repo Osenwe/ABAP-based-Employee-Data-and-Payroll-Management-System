@@ -1,0 +1,190 @@
+*&---------------------------------------------------------------------*
+*& Include ZTERM_PROJECT_Z111_TOP                            Module Pool      ZTERM_PROJECT_Z111
+*&
+*&---------------------------------------------------------------------*
+PROGRAM zterm_project_z111.
+
+TABLES: zemployeedata111,
+        zlogintable_111,
+        zjobs_111,
+        ztimesheet_111,
+        zpwdchange_111,
+        zpayroll_111,
+        zemployeeleav111.
+
+
+* Data for screen 0100
+DATA: ok_code  TYPE sy-ucomm,
+      loginid  TYPE  zlogintable_111-employeeid,
+      password TYPE zlogintable_111-password.
+
+* Data for screen 0200
+
+* Data for screen 0300, 0301, 0302
+TYPES: BEGIN OF ty_employees,
+         "client      TYPE zemployeedata111-client,
+         id          TYPE zemployeedata111-employee_id,
+         firstname   TYPE zemployeedata111-fname,
+         lastname    TYPE zemployeedata111-lname,
+         email       TYPE zemployeedata111-officialemail,
+         branch      TYPE zemployeedata111-branchno,
+         position_id TYPE zemployeedata111-position_id,
+       END OF ty_employees.
+
+
+DATA: branch         TYPE zemployeedata111-branchno,
+      it_active      TYPE TABLE OF ty_employees,
+      wa_active      TYPE   ty_employees,
+      it_inactive    TYPE TABLE OF ty_employees,
+      wa_inactive    TYPE ty_employees,
+      active_users   TYPE i,
+      active_users_c TYPE string,
+      email          TYPE c LENGTH 20,
+      summary        TYPE string,
+      fpart          TYPE string, " first part of user id i the making
+      lpart          TYPE string, " last part of user id in the making
+      name_len       TYPE i, " length of last name
+      emaildomain    TYPE string VALUE '@benands.com',
+      t_cnt          TYPE i, " value to record the total number of records in the database, we use this to generate  ID,
+      t_init         TYPE i VALUE 99999,
+      t_cnt_c        TYPE string,
+      rec_num        TYPE i,  " checks if simillar name exists in record prevent many people from having same email
+      rec_num_c      TYPE string, " character version of rec_num above,
+      pattern        TYPE c LENGTH  20. " pattern to use in searching database table for similar name
+
+
+DATA: BEGIN OF wa_employees,
+        fname    TYPE zemployeedata111-fname,
+        mname    TYPE zemployeedata111-mname,
+        lname    TYPE zemployeedata111-lname,
+        gender   TYPE zemployeedata111-gender,
+        dob      TYPE zemployeedata111-dob,
+        lang     TYPE zemployeedata111-lang,
+        phone    TYPE zemployeedata111-phone_no,
+        addr     TYPE zemployeedata111-address,
+        city     TYPE zemployeedata111-city,
+        zipc     TYPE zemployeedata111-zipcode,
+        posi     TYPE zemployeedata111-position_id,
+        branchno TYPE zemployeedata111-branchno,
+      END OF wa_employees.
+
+CONTROLS: ts_mat    TYPE TABSTRIP.
+
+* Date for screen 0400
+TYPES: BEGIN OF ty_timesheet,
+        timeid TYPE ztimesheet_111-timesheetid,
+        empid TYPE ztimesheet_111-employeeid,
+        datein TYPE ztimesheet_111-date_in,
+        timein TYPE ztimesheet_111-time_in,
+        dateo TYPE ztimesheet_111-date_out,
+        timeo TYPE ztimesheet_111-time_out,
+        pay TYPE ztimesheet_111-pay,
+        hours_worked TYPE ztimesheet_111-hours_worked,
+        currency  TYPE ztimesheet_111-currency,
+        paydate TYPE ztimesheet_111-paydate,
+        comment TYPE ztimesheet_111-work_comment,
+       END OF ty_timesheet.
+
+DATA: it_timesheet TYPE TABLE OF  ty_timesheet,
+      wa_timesheet TYPE ty_timesheet,
+      hours_worked TYPE p DECIMALS 2,
+      payment TYPE p DECIMALS 2.
+
+
+  TYPES:  BEGIN OF ty_payroll,
+            empid   TYPE  ztimesheet_111-employeeid,
+            pdate   TYPE  ztimesheet_111-paydate,
+            reghr   TYPE  ztimesheet_111-hours_worked,
+            regpay  TYPE  ztimesheet_111-pay,
+            totatax TYPE  zpayroll_111-totatax,
+            netpay  TYPE  zpayroll_111-netpay,
+          END OF ty_payroll.
+
+*****
+  DATA: it_payroll TYPE TABLE OF zpayroll_111,
+        it_pay     TYPE TABLE OF zpayroll_111, " ty_payroll,
+        wa_payroll TYPE zpayroll_111, "ty_payroll,
+        taxrate    TYPE p DECIMALS 2,
+        bonus      TYPE p DECIMALS 2,
+        tax        TYPE p DECIMALS 2.
+
+****
+* Data for screen 0500
+DATA: BEGIN OF wa_leave,
+        leaveid     TYPE zemployeeleav111-leave_id,
+        employee_id TYPE zemployeeleav111-employeeid,
+        ltype       TYPE zemployeeleav111-ltype,
+        start_date  TYPE zemployeeleav111-start_date,
+        end_date    TYPE zemployeeleav111-end_date,
+        reason      TYPE zemployeeleav111-reason,
+        status      TYPE zemployeeleav111-status,
+        comment     TYPE zemployeeleav111-admin_comment,
+      END OF wa_leave.
+
+TYPES: BEGIN OF ty_login,
+         client     TYPE zlogintable_111-client,
+         employeeid TYPE zlogintable_111-employeeid,
+         password   TYPE zlogintable_111-password,
+         stat       TYPE zlogintable_111-stat,
+         type       TYPE zlogintable_111-stype,
+       END OF ty_login.
+
+DATA: it_login TYPE TABLE OF ty_login,
+      wa_login TYPE ty_login.
+
+
+* Data for screen 0600
+
+TYPES: BEGIN OF ty_leave,
+         client       TYPE zemployeedata111-client,
+         leave_id     TYPE zemployeeleav111-leave_id,
+         emplooyee_id TYPE zemployeeleav111-employeeid,
+         firstname    TYPE zemployeedata111-fname,
+         lastname     TYPE zemployeedata111-lname,
+         email        TYPE zemployeedata111-officialemail,
+         ltype        TYPE zemployeeleav111-ltype,
+         start_date   TYPE zemployeeleav111-start_date,
+         end_date     TYPE zemployeeleav111-end_date,
+         reason       TYPE zemployeeleav111-reason,
+         status       TYPE zemployeeleav111-status,
+         comment      TYPE zemployeeleav111-admin_comment,
+       END OF ty_leave.
+
+
+DATA: it_approve TYPE TABLE OF ty_leave,
+      wa_approve TYPE   ty_leave,
+      it_reject  TYPE TABLE OF ty_leave,
+      wa_reject  TYPE   ty_leave,
+      it_pending TYPE TABLE OF ty_leave,
+      wa_pending TYPE   ty_leave,
+      startd     TYPE d,
+      endd       TYPE d.
+
+
+* Data for screen 0700
+
+
+TYPES: BEGIN OF ty_pwd,
+         client TYPE zpwdchange_111-client,
+         changeid TYPE zpwdchange_111-changeid,
+         empid  TYPE zpwdchange_111-employeeid,
+         opwd   TYPE zpwdchange_111-old_pwd,
+         npwd   TYPE zpwdchange_111-new_pwd,
+         datech TYPE zpwdchange_111-datech,
+         timech TYPE zpwdchange_111-timech,
+          stat TYPE zpwdchange_111-stat,
+       END OF ty_pwd.
+
+DATA: newp     TYPE string,
+      confirmp TYPE string,
+      it_pwd TYPE TABLE OF ty_pwd,
+      wa_pwd TYPE ty_pwd.
+.
+*
+*SELECT zemployeedata111~client zemployeeleav111~leave_id zemployeeleav111~employeeid
+*   zemployeedata111~fname zemployeedata111~lname zemployeedata111~officialemail zemployeeleav111~ltype
+*   zemployeeleav111~start_date zemployeeleav111~end_date zemployeeleav111~reason zemployeeleav111~status
+*  zemployeeleav111~admin_comment
+*  FROM zemployeedata111 INNER JOIN zemployeeleav111
+*  ON zemployeedata111~employee_id = zemployeeleav111~employeeid
+*  INTO CORRESPONDING FIELDS OF it_approve.
