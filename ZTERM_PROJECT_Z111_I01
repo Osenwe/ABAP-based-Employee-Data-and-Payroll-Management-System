@@ -1,0 +1,191 @@
+*&---------------------------------------------------------------------*
+*&  Include           ZTERM_PROJECT_Z111_I01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'EXIT' OR 'BACK' OR 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'LOGIN'.
+      PERFORM validate_login.
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'BACK'.
+      CALL SCREEN '0100'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'EM'.
+      CALL SCREEN '0300'.
+    WHEN 'PAYTIME'.
+      CALL SCREEN '0400'.
+    WHEN 'UACCT'.
+      CALL SCREEN '0500'.
+    WHEN 'ELA'.
+      CALL SCREEN '0600'.
+    WHEN 'CHANGE_PWD'.
+      CALL SCREEN '0700'.
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0300  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0300 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'SAVE'.
+      PERFORM save_user_record.
+    WHEN 'BACK'.
+      CALL SCREEN '0200'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+      " Navigation ends here
+    WHEN 'EMP_TAB1'.
+      PERFORM tab1.
+    WHEN 'EMP_TAB2'.
+      PERFORM tab2.
+    WHEN 'SEARCH'.
+      PERFORM populate_emp_data.
+    WHEN 'CLEAR'.
+      PERFORM clear_page_empdata.
+    WHEN 'EDIT'.
+      PERFORM display_data_emp.
+    WHEN 'UPDATE'.
+      PERFORM update_page_empdata.
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0400  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0400 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'BACK'.
+      CALL SCREEN '0200'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'EDIT'.
+      PERFORM edit_timesheet.
+    WHEN 'SAVE'.
+      PERFORM save_timesheet.
+    WHEN 'UPDATE'.
+      PERFORM update_timesheet.
+    WHEN 'VTS'.
+      PERFORM view_timesheet_alv.
+    WHEN 'POST'.
+      PERFORM post_payroll.
+    WHEN 'VPR'.
+      PERFORM view_payroll_alv.
+    WHEN 'CLEAR1'.
+      PERFORM clear_timesheet.
+    WHEN 'CLEAR2'.
+      PERFORM clear_payroll.
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0500  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0500 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'BACK'.
+      CALL SCREEN '0200'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'EDIT'.
+      PERFORM display_user_data.
+    WHEN 'DELET'.
+      PERFORM delete_user_data.
+    WHEN 'UPDAT'.
+      PERFORM update_user_accout.
+    WHEN 'CLEAR1'.
+      PERFORM clear1.
+    WHEN 'SAVE'.
+      PERFORM create_new_account.
+    WHEN 'VAUAD'.
+      PERFORM display_user_accout_alv.
+    WHEN 'VPCL'.
+      PERFORM display_pwd_change_logs.
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0600  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0600 INPUT.
+* Navigation case here
+  CASE ok_code.
+    WHEN 'BACK'.
+      CALL SCREEN '0200'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'TAB_LEAVE_TAB1'.
+      PERFORM tab3.
+    WHEN 'TAB_LEAVE_TAB2'.
+      PERFORM tab4.
+    WHEN 'TAB_LEAVE_TAB3'.
+      PERFORM tab5.
+    WHEN 'REFRESH'.
+      PERFORM populate_leave.
+    WHEN 'EDIT'.
+      PERFORM edit_leave.
+    WHEN 'SAVE'.
+      PERFORM save_leave.
+    WHEN 'UPDATE'.
+      PERFORM update_leave.
+    WHEN 'CLEAR'.
+      PERFORM clear_leave.
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0700  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0700  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0700 INPUT.
+   CASE ok_code.
+    WHEN 'UPDATE' OR 'SAVE'.
+      PERFORM change_password.
+    WHEN  'CLEAR'.
+      PERFORM clear_screen.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN '0200'.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN OTHERS.
+  ENDCASE.
+ENDMODULE.
