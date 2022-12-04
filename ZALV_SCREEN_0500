@@ -142,5 +142,5 @@ CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
 IF sy-subrc <> 0.
 Message 'Fatal Error!!!' TYPE 'E'.
 ENDIF.
-
+*
 ENDFORM.
