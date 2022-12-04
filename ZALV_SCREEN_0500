@@ -1,0 +1,146 @@
+*&---------------------------------------------------------------------*
+*& Report  ZALV_PROJECT_4_111
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+REPORT ZALV_PROJECT_4_111 NO STANDARD PAGE HEADING LINE-SIZE 400 MESSAGE-ID zmsg_111.
+
+TYPE-POOLS: slis.
+
+TABLES: zlogintable_111. "testing
+
+DATA: it_user TYPE STANDARD TABLE OF zlogintable_111,
+      it_fieldcat TYPE slis_t_fieldcat_alv,
+      wa_fieldcat TYPE slis_fieldcat_alv,
+      i_title_one TYPE lvc_title VALUE 'USER ACCOUNTS DETAILS',
+      v_repid LIKE sy-repid.
+
+
+
+SELECTION-SCREEN BEGIN OF SCREEN 800 AS SUBSCREEN. " BLOCK user
+ "WITH FRAME TITLE text-001.
+SELECT-OPTIONS: so_creat FOR zlogintable_111-created,
+                so_time FOR zlogintable_111-timest_created.
+SELECTION-SCREEN END OF SCREEN 800. " BLOCK user.
+
+PARAMETERS: hits TYPE i DEFAULT 100.
+
+START-OF-SELECTION.
+     PERFORM data_retrieve.
+     PERFORM build_fieldcatalog.
+     PERFORM display_alv.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_retrieve .
+  "SELECT * FROM zlogintable_111 INTO TABLE it_user.
+  SELECT *  INTO TABLE it_user FROM zlogintable_111 UP TO hits ROWS
+    WHERE CREATED IN so_creat
+    AND   TIMEST_CREATED IN so_time.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog .
+*Build field catalog
+  wa_fieldcat-fieldname  = 'EMPLOYEEID'.    " Fieldname in the data table
+  wa_fieldcat-seltext_m  = 'Employee ID'.   " Column description in the output
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'CREATED'.
+  wa_fieldcat-seltext_m  = 'Created On.'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'TIMEST_CREATED'.
+  wa_fieldcat-seltext_m  = 'Time Stamp'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'STAT'.
+  wa_fieldcat-seltext_m  = 'Status'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'STYPE'.
+  wa_fieldcat-seltext_m  = 'Account Type'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'PASSWORD'.
+  wa_fieldcat-seltext_m  = 'Password'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_alv .
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+ EXPORTING
+*   I_INTERFACE_CHECK                 = ' '
+*   I_BYPASSING_BUFFER                = ' '
+*   I_BUFFER_ACTIVE                   = ' '
+   I_CALLBACK_PROGRAM                = v_repid
+*   I_CALLBACK_PF_STATUS_SET          = ' '
+*   I_CALLBACK_USER_COMMAND           = ' '
+*   I_CALLBACK_TOP_OF_PAGE            = ' '
+*   I_CALLBACK_HTML_TOP_OF_PAGE       = ' '
+*   I_CALLBACK_HTML_END_OF_LIST       = ' '
+*   I_STRUCTURE_NAME                  =
+*   I_BACKGROUND_ID                   = ' '
+   I_GRID_TITLE                      = i_title_one
+*   I_GRID_SETTINGS                   =
+*   IS_LAYOUT                         =
+   IT_FIELDCAT                       = it_fieldcat
+*   IT_EXCLUDING                      =
+*   IT_SPECIAL_GROUPS                 =
+*   IT_SORT                           =
+*   IT_FILTER                         =
+*   IS_SEL_HIDE                       =
+*   I_DEFAULT                         = 'X'
+   I_SAVE                            = 'A'
+*   IS_VARIANT                        =
+*   IT_EVENTS                         =
+*   IT_EVENT_EXIT                     =
+*   IS_PRINT                          =
+*   IS_REPREP_ID                      =
+*   I_SCREEN_START_COLUMN             = 0
+*   I_SCREEN_START_LINE               = 0
+*   I_SCREEN_END_COLUMN               = 0
+*   I_SCREEN_END_LINE                 = 0
+*   I_HTML_HEIGHT_TOP                 = 0
+*   I_HTML_HEIGHT_END                 = 0
+*   IT_ALV_GRAPHICS                   =
+*   IT_HYPERLINK                      =
+*   IT_ADD_FIELDCAT                   =
+*   IT_EXCEPT_QINFO                   =
+*   IR_SALV_FULLSCREEN_ADAPTER        =
+* IMPORTING
+*   E_EXIT_CAUSED_BY_CALLER           =
+*   ES_EXIT_CAUSED_BY_USER            =
+  TABLES
+    t_outtab                          = it_user
+ EXCEPTIONS
+   PROGRAM_ERROR                     = 1
+   OTHERS                            = 2
+          .
+IF sy-subrc <> 0.
+Message 'Fatal Error!!!' TYPE 'E'.
+ENDIF.
+
+ENDFORM.
