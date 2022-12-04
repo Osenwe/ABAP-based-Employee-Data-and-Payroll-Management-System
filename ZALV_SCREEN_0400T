@@ -1,0 +1,131 @@
+*&---------------------------------------------------------------------*
+*& Report  ZALV_SCREEN_0400T
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+REPORT zalv_screen_0400t.
+
+
+TYPE-POOLS: slis.
+
+TABLES: ztimesheet_111. "testing
+
+DATA: it_user     TYPE STANDARD TABLE OF ztimesheet_111,
+      it_fieldcat TYPE slis_t_fieldcat_alv,
+      wa_fieldcat TYPE slis_fieldcat_alv,
+      i_title_one TYPE lvc_title VALUE 'EMPLOYEE TIMESHEET REPORT',
+      v_repid     LIKE sy-repid.
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK user
+ WITH FRAME TITLE text-001.
+SELECT-OPTIONS: so_id FOR ztimesheet_111-employeeid,
+                so_datei FOR ztimesheet_111-date_in,
+                so_dateo FOR ztimesheet_111-date_out.
+SELECTION-SCREEN END OF BLOCK user.
+
+
+START-OF-SELECTION.
+  PERFORM data_retrieve.
+  PERFORM build_fieldcatalog.
+  PERFORM display_alv.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_retrieve .
+  "SELECT * FROM ztimesheet_111 INTO TABLE it_user.
+  SELECT *  INTO TABLE it_user FROM ztimesheet_111
+    WHERE employeeid IN so_id
+    AND   date_in IN so_datei
+    AND   date_out IN so_dateo.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog .
+*Build field catalog
+  wa_fieldcat-fieldname  = 'TIMESHEETID'.    " Fieldname in the data table
+  wa_fieldcat-seltext_m  = 'Timesheet ID'.   " Column description in the output
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'EMPLOYEEID'.
+  wa_fieldcat-seltext_m  = 'Employee ID.'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'DATE_IN'.
+  wa_fieldcat-seltext_m  = 'Date In'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'TIME_IN'.
+  wa_fieldcat-seltext_m  = 'Time In'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'DATE_OUT'.
+  wa_fieldcat-seltext_m  = 'Date Out'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'TIME_OUT'.
+  wa_fieldcat-seltext_m  = 'Time_Out'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'HOURS_WORKED'.
+  wa_fieldcat-seltext_m  = 'Work Hours.'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'PAY'.
+  wa_fieldcat-seltext_m  = 'Pay'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'CURRENCY'.
+  wa_fieldcat-seltext_m  = 'Currency'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'PAYDATE'.
+  wa_fieldcat-seltext_m  = 'Pay Date'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'WORK_COMMENT'.
+  wa_fieldcat-seltext_m  = 'Comment'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_alv .
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = v_repid
+      i_grid_title       = i_title_one
+      it_fieldcat        = it_fieldcat
+      i_save             = 'A'
+    TABLES
+      t_outtab           = it_user
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+    MESSAGE 'Fatal Error!!!' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
