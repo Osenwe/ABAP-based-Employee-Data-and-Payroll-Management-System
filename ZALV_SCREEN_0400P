@@ -1,0 +1,144 @@
+*&---------------------------------------------------------------------*
+*& Report  ZALV_PROJECT_4_111
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+REPORT ZALV_PROJECT_4_111 NO STANDARD PAGE HEADING LINE-SIZE 400 MESSAGE-ID zmsg_111.
+
+TYPE-POOLS: slis.
+
+TABLES: zpayroll_111. "testing
+
+DATA: it_user TYPE STANDARD TABLE OF zpayroll_111,
+      it_fieldcat TYPE slis_t_fieldcat_alv,
+      wa_fieldcat TYPE slis_fieldcat_alv,
+      i_title_one TYPE lvc_title VALUE 'SUMMARY PAYROLL REPORT FOR PAY PERIOD',
+      v_repid LIKE sy-repid.
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK user
+ WITH FRAME TITLE text-001.
+SELECT-OPTIONS: so_id FOR zpayroll_111-employee_id,
+                so_paydt FOR zpayroll_111-paydate.
+SELECTION-SCREEN END OF BLOCK user.
+
+START-OF-SELECTION.
+     PERFORM data_retrieve.
+     PERFORM build_fieldcatalog.
+     PERFORM display_alv.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_retrieve .
+  "SELECT * FROM zpayroll_111 INTO TABLE it_user.
+  SELECT *  INTO TABLE it_user FROM zpayroll_111
+    WHERE employee_id IN so_id
+    AND paydate IN so_paydt.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog .
+*Build field catalog
+  wa_fieldcat-fieldname  = 'EMPLOYEE_ID'.    " Fieldname in the data table
+  wa_fieldcat-seltext_m  = 'Employee ID'.   " Column description in the output
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'PAYDATE'.
+  wa_fieldcat-seltext_m  = 'Paydate'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'REGHR'.
+  wa_fieldcat-seltext_m  = 'Hours Worked'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'REGPAY'.
+  wa_fieldcat-seltext_m  = 'Gross Income'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'TOTATAX'.
+  wa_fieldcat-seltext_m  = 'Tax'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'NETPAY'.
+  wa_fieldcat-seltext_m  = 'Net Income'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_alv .
+CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+ EXPORTING
+*   I_INTERFACE_CHECK                 = ' '
+*   I_BYPASSING_BUFFER                = ' '
+*   I_BUFFER_ACTIVE                   = ' '
+   I_CALLBACK_PROGRAM                = v_repid
+*   I_CALLBACK_PF_STATUS_SET          = ' '
+*   I_CALLBACK_USER_COMMAND           = ' '
+*   I_CALLBACK_TOP_OF_PAGE            = ' '
+*   I_CALLBACK_HTML_TOP_OF_PAGE       = ' '
+*   I_CALLBACK_HTML_END_OF_LIST       = ' '
+*   I_STRUCTURE_NAME                  =
+*   I_BACKGROUND_ID                   = ' '
+   I_GRID_TITLE                      = i_title_one
+*   I_GRID_SETTINGS                   =
+*   IS_LAYOUT                         =
+   IT_FIELDCAT                       = it_fieldcat
+*   IT_EXCLUDING                      =
+*   IT_SPECIAL_GROUPS                 =
+*   IT_SORT                           =
+*   IT_FILTER                         =
+*   IS_SEL_HIDE                       =
+*   I_DEFAULT                         = 'X'
+   I_SAVE                            = 'A'
+*   IS_VARIANT                        =
+*   IT_EVENTS                         =
+*   IT_EVENT_EXIT                     =
+*   IS_PRINT                          =
+*   IS_REPREP_ID                      =
+*   I_SCREEN_START_COLUMN             = 0
+*   I_SCREEN_START_LINE               = 0
+*   I_SCREEN_END_COLUMN               = 0
+*   I_SCREEN_END_LINE                 = 0
+*   I_HTML_HEIGHT_TOP                 = 0
+*   I_HTML_HEIGHT_END                 = 0
+*   IT_ALV_GRAPHICS                   =
+*   IT_HYPERLINK                      =
+*   IT_ADD_FIELDCAT                   =
+*   IT_EXCEPT_QINFO                   =
+*   IR_SALV_FULLSCREEN_ADAPTER        =
+* IMPORTING
+*   E_EXIT_CAUSED_BY_CALLER           =
+*   ES_EXIT_CAUSED_BY_USER            =
+  TABLES
+    t_outtab                          = it_user
+ EXCEPTIONS
+   PROGRAM_ERROR                     = 1
+   OTHERS                            = 2
+          .
+IF sy-subrc <> 0.
+Message 'Fatal Error!!!' TYPE 'E'.
+ENDIF.
+
+ENDFORM.
