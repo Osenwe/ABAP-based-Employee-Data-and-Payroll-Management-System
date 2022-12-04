@@ -27,18 +27,6 @@ Save, Edit, Update, view timesheet records
 Generate summary payroll records from timesheet records for a particular date range, and a specific pay date.
 
 
-
-OPEN ISSUES
-This project was faced with some difficulties, the most important being time constraints. Adequate testing has not been performed to check out for potential bugs, but so far I have not encountered any errors.
-
-Unable to connect the selection screen created in the ALV report with the module pool program.
-Initial problem faced was determining what fields to use as primary keys in each table.
-In screen 0300 table control, the position id column is blank, some non-fatal error in the code I am working on to correct. 
-Due to time constraints I am not able to add functionality that helps prevent input error by users. For example, putting Time in as 7:30am and Time out as 4:00 am on the same day, in this case hours worked will be negative, thus user must ensure they put in the correct time. 
-Knowledge needed to create this project came from my BIS657 class.
-Additional sources of knowledge came from my experience with BIS638 class material’s, and some videos on Udemy, and YouTube.
-
-
 FUNCTIONAL DESCRIPTION
 To make the system more functional the following were created.
 Seven (7) Normal screens and Five (5) Sub screens
