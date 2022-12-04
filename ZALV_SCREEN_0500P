@@ -1,0 +1,106 @@
+*&---------------------------------------------------------------------*
+*& Report  ZALV_SCREEN_0500P
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+REPORT ZALV_SCREEN_0500P.
+
+TYPE-POOLS: slis.
+
+TABLES: zpwdchange_111. "testing
+
+DATA: it_user     TYPE STANDARD TABLE OF zpwdchange_111,
+      it_fieldcat TYPE slis_t_fieldcat_alv,
+      wa_fieldcat TYPE slis_fieldcat_alv,
+      i_title_one TYPE lvc_title VALUE 'PASSWORD CHANGE LOGS',
+      v_repid     LIKE sy-repid.
+
+SELECTION-SCREEN BEGIN OF BLOCK user.
+ "WITH FRAME TITLE text-001.
+SELECT-OPTIONS: so_id FOR zpwdchange_111-employeeid.
+
+SELECTION-SCREEN END OF BLOCK user.
+
+START-OF-SELECTION.
+  PERFORM data_retrieve.
+  PERFORM build_fieldcatalog.
+  PERFORM display_alv.
+*&---------------------------------------------------------------------*
+*&      Form  DATA_RETRIEVE
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM data_retrieve .
+  "SELECT * FROM zpwdchange_111 INTO TABLE it_user.
+  SELECT *  INTO TABLE it_user FROM zpwdchange_111
+    WHERE EMPLOYEEID in so_id.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  BUILD_FIELDCATALOG
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM build_fieldcatalog .
+*Build field catalog
+  wa_fieldcat-fieldname  = 'CHANGEID'.    " Fieldname in the data table
+  wa_fieldcat-seltext_m  = 'Change ID'.   " Column description in the output
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'EMPLOYEEID'.
+  wa_fieldcat-seltext_m  = 'Employee ID.'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'OLD_PWD'.
+  wa_fieldcat-seltext_m  = 'Old Password'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'NEW_PWD'.
+  wa_fieldcat-seltext_m  = 'Current Password'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'DATECH'.
+  wa_fieldcat-seltext_m  = 'Date Changed'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'TIMECH'.
+  wa_fieldcat-seltext_m  = 'Time_Changed'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+  wa_fieldcat-fieldname  = 'STAT'.
+  wa_fieldcat-seltext_m  = 'Comment'.
+  APPEND wa_fieldcat TO it_fieldcat.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Form  DISPLAY_ALV
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+*  -->  p1        text
+*  <--  p2        text
+*----------------------------------------------------------------------*
+FORM display_alv .
+  CALL FUNCTION 'REUSE_ALV_GRID_DISPLAY'
+    EXPORTING
+      i_callback_program = v_repid
+      i_grid_title       = i_title_one
+      it_fieldcat        = it_fieldcat
+      i_save             = 'A'
+    TABLES
+      t_outtab           = it_user
+    EXCEPTIONS
+      program_error      = 1
+      OTHERS             = 2.
+  IF sy-subrc <> 0.
+    MESSAGE 'Fatal Error!!!' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
