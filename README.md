@@ -49,6 +49,8 @@ Thirty-two (33) subroutines containing the logic which powers the functionalitie
 Screens
 Screen 0100: This screen is the main login page, only employees registered as Admins, and active will be able login as this project was created with admins in mind.
 
+![0100](https://user-images.githubusercontent.com/68793142/205477361-274b8222-067c-476a-84ab-df16427078bb.png)
+
 Screen 0200: This screen is the home page the admin sees after logging in. It allows the user to navigate to any task.
 
 
