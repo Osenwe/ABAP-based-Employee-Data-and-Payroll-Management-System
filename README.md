@@ -109,35 +109,22 @@ ZALV_SCREEN_0500P:	Displays all password change attempts with select options bas
 
 Custom Tables
 The project requires some database tables to be fully functional, 7 custom database tables have been developed to this effect, this project allows admins to make some limited changes to the data contained within the table and they are briefly described below.
+
 ZEMPLOYEEDATA111:  The purpose of this table is to store general data about employees and is the basis for the majority of the screens created in this project. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+![zemployeeleav111](https://user-images.githubusercontent.com/68793142/205477502-ac39d46c-5fc7-4fa3-b019-a1f8f8727730.png)
 
 ZLOGINTABLE_111: 	This table's purpose is to store employees’ login details such as password, and it is the basis for the login screen, whenever an employee job has been terminated his detail must be deleted from this table so as to prevent them from logging back in, this functionality can be found on screen ‘0500’, the nature of the primary key here allows an employee to have more than one login details as long as it is created on different days.
-. 
-
+ 
+![zlogintable_111](https://user-images.githubusercontent.com/68793142/205477504-0705a049-9a99-4402-af26-b4fa056ced36.png)
 
 ZPWDCHANGE_111:	The purpose of this table tracks all attempts to make password changes to any account.  As a security measure it stores information about the date and timestamps when password changes were made, and most importantly stores a history of the previous passwords used by an employee. Admins won't be able to make changes to the data in this table but can only view the reports. The STAT column in the table is an auto generated comment on the password change.
 
+![zpwdchange_111](https://user-images.githubusercontent.com/68793142/205477506-84a3defc-edbc-4014-837b-cdbe9d6a0bc3.png)
 
 
 ZEMPLOYEELEAV111:	The purpose of this table is to store information about all leave requests such as study, sick leave etc., an employee might issue.
+![zemployeedata111](https://user-images.githubusercontent.com/68793142/205477501-cd2cd65f-b999-482d-bbaf-fc86884e4792.png)
 
 
 
@@ -147,16 +134,17 @@ ZEMPLOYEELEAV111:	The purpose of this table is to store information about all le
 
 
 ZJOBS_111:	This table stores information about various job positions such as titles and hourly rate for that particular job position, using SQL queries in conjunction with the ZEMPLOYEEDATA111 we get information that makes the timesheet table more complete. 
+![zjobs_111](https://user-images.githubusercontent.com/68793142/205477503-fbb5e650-4f65-4766-a1f1-54aedb2b2f29.png)
 
 
 
 ZTIMESHEET_111:	This table stores basic information about the history of every employee's completed work shifts. This table will be of great importance in creating the payroll table.
-
+![ztimesheet111](https://user-images.githubusercontent.com/68793142/205477500-692af014-de64-43af-a4f0-901c7ec28243.png)
 
 
 ZPAYROLL_111: This table stores information about all salary payments that have been received by the employees.  Data in this table will be auto generated from the ZTIMESHEET_111 table on every pay date period.
 
-
+![zpayroll_111](https://user-images.githubusercontent.com/68793142/205477505-a37b185a-8970-4192-a095-883ec125e092.png)
 
 
 
@@ -167,6 +155,7 @@ PROCESS FLOW
 
 Navigation
 In designing this project, care was taken to ensure a smooth navigation between the various screens and reports. The diagram below gives an overview.  rpt 1,2,3, and 4 signifies the ALV reports. The navigation style shown below gives the user some flexibility in choosing a task to do.
+![navigation](https://user-images.githubusercontent.com/68793142/205477645-8973fbe3-b9f0-4f14-b2f4-26e11a1a6663.png)
 
 
 
