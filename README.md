@@ -1,23 +1,8 @@
 # ABAP-based-Employee-Data-and-Payroll-Management-System
 This is a project done for my a course in one of my graduate program (Masters Information Systems)
-FINAL PROJECT REPORT BIS657
-
-Employee Data and Payroll Management System
-Prepared by: Andrew Benyeogor Osenwe                                  
-Date Prepared: 11.30.2022
-Status:  Final Report
-Version:  1.0
-Package ID: Z111
-User: AUSER-111
-Program: ZTERM_PROJECT_Z111	
-TCODE: ZTP111
-Login ID: 100001
-Password: passinit
 
 INTRODUCTION
-Background Information
-Benand's Bakeries, founded in 2018, is fast food joint that makes a variety of baked products for their customers, this business is based in Michigan with three business locations in Mount Pleasant, Alma, and Midland. In recent years, the bakery has experienced tremendous growth in terms of its customer base which has also led to an increase in the number of its employees from 20+ to 100+ employees. 
-Benand’s Bakeries employees are paid on an hourly basis. Employees are also allowed to choose their work schedule timetable, but must keep to it else they drop in a leave request. For the business to manage its workforce, to allow for survival and further expansion an automated system will be needed to allow the admins to maintain employee's data, their timesheet records, create new or edit job positions, and generate payroll summaries for each pay period, and most importantly allow for some level of security to prevent unauthorized persons from gaining access.
+ This project was meant to simulate some employees data maintenance functinalities. I observed while working at CMU dining, but with SAP ABAP.
 Summary of the functionalities
 Create, Save, edit, Update and User data,
 Create, Save, edit, Update, Delete/Deactivate User Account Login details and view reports
