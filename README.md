@@ -2,7 +2,7 @@
 This is a project done for my a course in one of my graduate program (Masters Information Systems)
 
 INTRODUCTION
- This project was meant to simulate some employees data maintenance functinalities. I observed while working at CMU dining, but with SAP ABAP.
+ This purpose of this project is to simulate some employees data maintenance functinalities. I observed while working at CMU dining, but with SAP ABAP.
 Summary of the functionalities
 Create, Save, edit, Update and User data,
 Create, Save, edit, Update, Delete/Deactivate User Account Login details and view reports
