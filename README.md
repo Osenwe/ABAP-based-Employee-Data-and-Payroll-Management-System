@@ -127,13 +127,22 @@ ZPAYROLL_111: This table stores information about all salary payments that have 
 PROCESS FLOW
 
 Navigation
-In designing this project, care was taken to ensure a smooth navigation between the various screens and reports. The diagram below gives an overview.  rpt 1,2,3, and 4 signifies the ALV reports. The navigation style shown below gives the user some flexibility in choosing a task to do.
+In designing this project, care was taken to ensure a smooth navigation between the various screens and reports. The diagram below gives an overview.  rpt 1,2,3, and 4 signifies the ALV reports. Screen 601, 602, 603, 301, 302 are the subcreens controlling the tabstrips on Screen 300 and 600.
+The navigation style shown below gives the user some flexibility in choosing a task to do.
 ![navigation](https://user-images.githubusercontent.com/68793142/205477645-8973fbe3-b9f0-4f14-b2f4-26e11a1a6663.png)
 
 
 
 SIMILAR FUNCTIONALITIES NOT IN PROJECT
- The following similar functionalities were not added to this project because they are out of scope
 Ability to create new and edit job positions.
 Ability to create new, save, edit branch locations, automatically generate the number of workers in that branch.
 Use of interactive ALV reports.
+
+PROJECT IMPROVEMENT OPPORTUNITIES ( OR TASKS TO DO )
+1) Link the payroll costs to the appropriate SAP tables in FICO ( or i can design my own tables )
+2) Create Login detail during sign up instead of doing it separately
+3) More use of classes to make code shorter
+4) Connect a selection screen to the ALV reports so as to filter out reports
+5) Make the ALV report interactive, Clicking on an individual employee payroll report should show you his timesheet record
+6) Use of Search Help in certain input fields
+7) New screen to handle details about various jobs positions (create, save, edit, and update
