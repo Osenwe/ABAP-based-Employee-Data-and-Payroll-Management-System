@@ -11,6 +11,8 @@ Track all attempts to change user passwords (successful or unsuccessful)
 Save, Edit, Update, view timesheet records
 Generate summary payroll records from timesheet records for a particular date range, and a specific pay date.
 
+ASSUMPTIONS
+1) The business has a clock in machine used by it workers for clocking in and clocking out, feeds this info directly into the time sheet table. If clock in machine fails or some human errors (example worker forgets to clock in or clock out before going home)  then screen 0400 will be useful 
 
 FUNCTIONAL DESCRIPTION
 To make the system more functional the following were created.
@@ -142,7 +144,8 @@ PROJECT IMPROVEMENT OPPORTUNITIES ( OR TASKS TO DO )
 1) Link the payroll costs to the appropriate SAP tables in FICO ( or i can design my own tables )
 2) Create Login detail during sign up instead of doing it separately
 3) More use of classes to make code shorter
-4) Connect a selection screen to the ALV reports so as to filter out reports
+4) Connect a selection screen to the ALV reports for filtering purposes
 5) Make the ALV report interactive, Clicking on an individual employee payroll report should show you his timesheet record
 6) Use of Search Help in certain input fields
-7) New screen to handle details about various jobs positions (create, save, edit, and update
+7) New screen to handle details about various jobs positions (create, save, edit, and update)
+8) More use of pop up boxes
