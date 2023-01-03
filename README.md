@@ -1,15 +1,17 @@
 # ABAP-based-Employee-Data-and-Payroll-Management-System
 This is a project done for my a course in one of my graduate program (Masters Information Systems)
 
-INTRODUCTION
- This purpose of this project is to simulate some employees data maintenance functinalities. I observed while working at CMU dining, but with SAP ABAP.
+Background Information
+Employee data is an important resource in any business organization as it could help managers in decision-making, discovering special skills, highlighting productivity trends, and evaluating the success of training initiatives, among many other things. Managing and analyzing these data could also give the managers a better understanding of employee behavior such as turnover rate, help in creating better work schedules, and determine how leave requests affect business performance.
+The main goal of this project is to show how SAP ABAP can be used in managing this data, and to help a small-scale business to manage its employee's data and to generate a payroll summary report from timesheet records. This document briefly explains the functionality of the project and how to use it.
+
 Summary of the functionalities
-Create, Save, edit, Update and User data,
+Create, Save, edit, Update, and User data,
 Create, Save, edit, Update, Delete/Deactivate User Account Login details and view reports
-Create, Save, edit, Update, View employee Leave requests (Approved, Declined, Pending)
+Create, Save, edit, Update, and View employee Leave requests (Approved, Declined, Pending)
 Track all attempts to change user passwords (successful or unsuccessful)
-Save, Edit, Update, view timesheet records
-Generate summary payroll records from timesheet records for a particular date range, and a specific pay date.
+Save, Edit, Update and view timesheet records
+Generate summary payroll records from timesheet records for a particular date range and a specific pay date.
 
 ASSUMPTIONS
 1) The business has a clock in machine used by it workers for clocking in and clocking out, feeds this info directly into the time sheet table. If clock in machine fails or some human errors (example worker forgets to clock in or clock out before going home)  then screen 0400 will be useful 
@@ -54,8 +56,10 @@ Post summary payroll for all employees for a particular pay period, this informa
 ![payroll report](https://user-images.githubusercontent.com/68793142/205477492-4a071c88-bedb-4b27-bfc6-899f90095c2c.png)
 
 
-Screen 0500: Login details for a newly hired employee can be created through this screen, after his personal details might have been saved on screen 0300, else we get a warning message. Through this screen a current admin has the ability to make a non admin to become an admin. Deleting an employee record on this screen changes the status of that employee to inactive in all tables used in this project. 
-To start editing a user login detail put in employee id, click edit, user details appear then change what details you need to then click update, admins are only allowed to change status and Account type.
+Screen 0500: Login details for a newly hired employee can be created through this screen after his details might have been saved on screen 0300, else we get a warning message. Through this screen, a current admin can make a non-admin become an admin. Deleting an employee record on this screen changes the status of that employee to inactive in all tables used in this project. 
+
+To start editing a user login detail put in the employee id, click edit, user details appear then change what details you need to then click update, admins are only allowed to change status and Account type.
+
 
 ![0500](https://user-images.githubusercontent.com/68793142/205477407-9685acf6-2607-4781-bf64-aba704e7d555.png)
 
@@ -141,7 +145,7 @@ Ability to create new, save, edit branch locations, automatically generate the n
 Use of interactive ALV reports.
 
 PROJECT IMPROVEMENT OPPORTUNITIES ( OR TASKS TO DO )
-1) Link the payroll costs to the appropriate SAP tables in FICO ( or i can design my own tables )
+1) Link the payroll costs to a table that keeps track of the cost.
 2) Create Login detail during sign up instead of doing it separately
 3) More use of classes to make code shorter
 4) Connect a selection screen to the ALV reports for filtering purposes
