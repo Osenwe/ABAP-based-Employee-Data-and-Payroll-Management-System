@@ -7,10 +7,15 @@ The main goal of this project is to show how SAP ABAP can be used in managing th
 
 Summary of the functionalities
 Create, Save, edit, Update, and User data,
+
 Create, Save, edit, Update, Delete/Deactivate User Account Login details and view reports
+
 Create, Save, edit, Update, and View employee Leave requests (Approved, Declined, Pending)
+
 Track all attempts to change user passwords (successful or unsuccessful)
+
 Save, Edit, Update and view timesheet records
+
 Generate summary payroll records from timesheet records for a particular date range and a specific pay date.
 
 ASSUMPTIONS
